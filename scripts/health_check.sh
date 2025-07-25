@@ -63,7 +63,7 @@ echo "🐳 2. Containers Docker"
 echo "----------------------"
 
 # n8n
-check_status "n8n principal" "docker ps | grep 'n8n-native' | grep -v 'worker' > /dev/null"
+check_status "n8n principal" "docker ps | grep -E '(n8n-native|n8n-clean)' | grep -v 'worker' > /dev/null"
 check_status "n8n workers (4)" "[ $(docker ps | grep 'n8n-worker' | wc -l) -eq 4 ]"
 check_status "n8n Web UI" "curl -s http://localhost:5678 > /dev/null 2>&1"
 
