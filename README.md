@@ -20,8 +20,7 @@ Scripts e configurações profissionais para otimizar PostgreSQL e Redis em macO
 - `scripts/apply_postgresql_optimization.sh` - Otimiza PostgreSQL para usar 25% da RAM
 - `scripts/optimize_redis_full.sh` - Configura Redis com 12GB e I/O threads
 - `scripts/migrate_*_to_native.sh` - Migra dados do Docker para serviços nativos
-- `scripts/start_n8n_native.sh` - Inicia n8n com serviços nativos
-- `scripts/start_n8n_workers.sh` - Adiciona workers do n8n
+- `scripts/start_n8n_clean.sh` - Inicia n8n limpo com serviços nativos
 
 ### 2. Exemplo BullMQ com Dashboard Visual
 Implementação completa de filas com Redis otimizado:
@@ -74,8 +73,7 @@ npm run worker     # Processar jobs
 
 ### 4. Iniciar n8n
 ```bash
-./scripts/start_n8n_native.sh     # Inicia n8n principal
-./scripts/start_n8n_workers.sh 4  # Adiciona 4 workers
+./scripts/start_n8n_clean.sh       # Inicia n8n limpo e otimizado
 # Acesse: http://localhost:5678
 ```
 
