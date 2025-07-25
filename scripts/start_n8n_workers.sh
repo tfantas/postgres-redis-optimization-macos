@@ -25,10 +25,8 @@ for i in $(seq 1 $WORKERS); do
       -e QUEUE_BULL_REDIS_PORT=6379 \
       -e QUEUE_BULL_REDIS_DB=1 \
       -e N8N_CONCURRENCY_PRODUCTION_LIMIT=25 \
-      -e N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true \
-      -e N8N_RUNNERS_ENABLED=true \
       -v ~/.n8n:/home/node/.n8n \
-      n8nio/n8n worker
+      n8nio/n8n:1.103.1 worker
       
     sleep 2
 done

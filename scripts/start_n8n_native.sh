@@ -61,14 +61,8 @@ docker run -d \
   -e GENERIC_TIMEZONE=America/Sao_Paulo \
   -e N8N_METRICS=true \
   -e N8N_CONCURRENCY_PRODUCTION_LIMIT=100 \
-  -e N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true \
-  -e N8N_RUNNERS_ENABLED=true \
-  -e N8N_RUNNERS_MODE=external \
-  -e N8N_RUNNERS_SERVER_ENABLED=false \
-  -e OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS=true \
-  -e N8N_ENCRYPTION_KEY=$(openssl rand -base64 32) \
   -v ~/.n8n:/home/node/.n8n \
-  n8nio/n8n
+  n8nio/n8n:1.103.1
 
 echo "⏳ Aguardando n8n iniciar..."
 sleep 10
