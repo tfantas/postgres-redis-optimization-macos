@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BullMQ Dashboard - PostgreSQL & Redis Otimizado</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .animate-pulse-slow {
+            animation: pulse 3s ease-in-out infinite;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <!-- Header -->
+    <header class="bg-gray-800 shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
+                        BullMQ Dashboard
+                    </h1>
+                    <span class="text-sm text-gray-400">PostgreSQL 16GB + Redis 12GB</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div id="status" class="flex items-center">
+                        <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse mr-2"></div>
+                        <span class="text-sm">Conectado</span>
+                    </div>
+                    <button onclick="location.href='/admin/queues'" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition">
+                        Bull Board →
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8">
+        <!-- Performance Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="glass-effect rounded-xl p-6">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-sm font-medium text-gray-400">Jobs/Segundo</h3>
+                    <span class="text-2xl font-bold text-green-400" id="jobsPerSecond">0</span>
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-2">
+                    <div id="jobsPerSecondBar" class="bg-green-400 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <div class="glass-effect rounded-xl p-6">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-sm font-medium text-gray-400">CPU PostgreSQL</h3>
+                    <span class="text-2xl font-bold text-blue-400" id="pgCpu">0%</span>
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-2">
+                    <div id="pgCpuBar" class="bg-blue-400 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <div class="glass-effect rounded-xl p-6">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-sm font-medium text-gray-400">Memória Redis</h3>
+                    <span class="text-2xl font-bold text-purple-400" id="redisMemory">0GB</span>
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-2">
+                    <div id="redisMemoryBar" class="bg-purple-400 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <div class="glass-effect rounded-xl p-6">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-sm font-medium text-gray-400">Latência</h3>
+                    <span class="text-2xl font-bold text-yellow-400" id="latency">0ms</span>
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-2">
+                    <div id="latencyBar" class="bg-yellow-400 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Queue Statistics -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Email Queue -->
+            <div class="glass-effect rounded-xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-bold flex items-center">
+                        <span class="text-2xl mr-2">📧</span> Email Queue
+                    </h2>
+                    <span class="text-sm text-gray-400">50 workers</span>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Aguardando</span>
+                        <span class="font-bold text-yellow-400" id="email-waiting">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Processando</span>
+                        <span class="font-bold text-blue-400" id="email-active">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Completos</span>
+                        <span class="font-bold text-green-400" id="email-completed">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Falhas</span>
+                        <span class="font-bold text-red-400" id="email-failed">0</span>
+                    </div>
+                    <div class="mt-4">
+                        <canvas id="emailChart" height="150"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Image Queue -->
+            <div class="glass-effect rounded-xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-bold flex items-center">
+                        <span class="text-2xl mr-2">🖼️</span> Image Queue
+                    </h2>
+                    <span class="text-sm text-gray-400">5 workers</span>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Aguardando</span>
+                        <span class="font-bold text-yellow-400" id="image-waiting">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Processando</span>
+                        <span class="font-bold text-blue-400" id="image-active">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Completos</span>
+                        <span class="font-bold text-green-400" id="image-completed">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Falhas</span>
+                        <span class="font-bold text-red-400" id="image-failed">0</span>
+                    </div>
+                    <div class="mt-4">
+                        <canvas id="imageChart" height="150"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Queue -->
+            <div class="glass-effect rounded-xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-bold flex items-center">
+                        <span class="text-2xl mr-2">📊</span> Analytics Queue
+                    </h2>
+                    <span class="text-sm text-gray-400">10 workers</span>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Aguardando</span>
+                        <span class="font-bold text-yellow-400" id="analytics-waiting">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Processando</span>
+                        <span class="font-bold text-blue-400" id="analytics-active">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Completos</span>
+                        <span class="font-bold text-green-400" id="analytics-completed">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Falhas</span>
+                        <span class="font-bold text-red-400" id="analytics-failed">0</span>
+                    </div>
+                    <div class="mt-4">
+                        <canvas id="analyticsChart" height="150"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-time Chart -->
+        <div class="glass-effect rounded-xl p-6 mb-8">
+            <h2 class="text-xl font-bold mb-4">📈 Performance em Tempo Real</h2>
+            <canvas id="realtimeChart" height="100"></canvas>
+        </div>
+
+        <!-- System Info -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="glass-effect rounded-xl p-6">
+                <h3 class="text-lg font-bold mb-4 text-blue-400">🐘 PostgreSQL</h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">shared_buffers</span>
+                        <span class="font-mono">16GB</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">effective_cache_size</span>
+                        <span class="font-mono">48GB</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">work_mem</span>
+                        <span class="font-mono">256MB</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">max_parallel_workers</span>
+                        <span class="font-mono">12</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="glass-effect rounded-xl p-6">
+                <h3 class="text-lg font-bold mb-4 text-red-400">🔴 Redis</h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">maxmemory</span>
+                        <span class="font-mono">12GB</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">io-threads</span>
+                        <span class="font-mono">8</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">persistence</span>
+                        <span class="font-mono">RDB + AOF</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">eviction</span>
+                        <span class="font-mono">allkeys-lru</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/dashboard.js"></script>
+</body>
+</html>

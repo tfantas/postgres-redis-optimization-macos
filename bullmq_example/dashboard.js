@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const { createBullBoard } = require('@bull-board/api');
 const { BullMQAdapter } = require('@bull-board/api/bullMQAdapter');
 const { ExpressAdapter } = require('@bull-board/express');
@@ -7,6 +8,9 @@ const { redisOptions } = require('./connection');
 
 // Criar app Express
 const app = express();
+
+// Servir arquivos estáticos
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Criar adaptador para Express
 const serverAdapter = new ExpressAdapter();
@@ -40,8 +44,13 @@ createBullBoard({
 // Adicionar rota do Bull Board
 app.use('/admin/queues', serverAdapter.getRouter());
 
-// Rota principal com estatísticas
-app.get('/', async (req, res) => {
+// Servir o dashboard visual na raiz
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Rota de estatísticas em texto (antiga home)
+app.get('/stats-text', async (req, res) => {
   const emailStats = await emailQueue.getJobCounts();
   const imageStats = await imageQueue.getJobCounts();
   const analyticsStats = await analyticsQueue.getJobCounts();
@@ -130,7 +139,7 @@ app.get('/api/stats', async (req, res) => {
 });
 
 // Iniciar servidor
-const PORT = 3000;
+const PORT = 3001;
 app.listen(PORT, () => {
   console.log(`🚀 Dashboard rodando em http://localhost:${PORT}`);
   console.log(`📊 Bull Board em http://localhost:${PORT}/admin/queues`);
