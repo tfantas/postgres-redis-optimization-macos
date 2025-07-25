@@ -22,8 +22,6 @@ Scripts e configurações profissionais para otimizar PostgreSQL e Redis em macO
 - `scripts/migrate_*_to_native.sh` - Migra dados do Docker para serviços nativos
 - `scripts/start_n8n_native.sh` - Inicia n8n com serviços nativos
 - `scripts/start_n8n_workers.sh` - Adiciona workers do n8n
-- `scripts/n8n_no_auth_final.sh` - n8n com credenciais automáticas
-- `scripts/n8n_proxy_no_auth.sh` - Proxy reverso sem autenticação
 
 ### 2. Exemplo BullMQ com Dashboard Visual
 Implementação completa de filas com Redis otimizado:
@@ -81,22 +79,6 @@ npm run worker     # Processar jobs
 # Acesse: http://localhost:5678
 ```
 
-### 5. 🔓 Acesso sem Autenticação (Novo!)
-
-#### Opção 1: Credenciais Automáticas
-```bash
-./scripts/n8n_no_auth_final.sh
-# Email: admin@localhost
-# Senha: n8n123
-```
-
-#### Opção 2: Proxy Reverso (Sem Login!)
-```bash
-./scripts/n8n_proxy_no_auth.sh
-# Acesse: http://localhost:5679  # Sem necessidade de login!
-```
-
-> **Nota**: n8n v1.103.1 tem limitações para desabilitar autenticação. Veja [docs/n8n_auth_limitations.md](docs/n8n_auth_limitations.md) para detalhes.
 
 ## 📋 Pré-requisitos
 
